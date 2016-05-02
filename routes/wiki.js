@@ -7,7 +7,7 @@ wikiRouter.get('/', function (req, res) {
     res.redirect('/');
 });
 
-wikiRouter.post('/', function (req, res) {
+wikiRouter.post('/', function (req, res, next) {
     var title = req.body.title;
     var content = req.body.content;
     var page = Page.build({
@@ -15,13 +15,29 @@ wikiRouter.post('/', function (req, res) {
         content: content
     })
     page.save()
-    .then(function () {
-        res.redirect('/');
-    });
+        .then(function (newPage) {
+            res.redirect(newPage.route);
+        }).catch(next);
 })
 
 wikiRouter.get('/add', function (req, res) {
     res.render('addpage', {});
 })
+
+wikiRouter.get('/:urlTitle', function (req, res, next) {
+
+    Page.findOne({
+            where: {
+                urlTitle: req.params.urlTitle
+            }
+        })
+        .then(
+            function (result) {
+                res.render('wikipage', {
+                    page: result
+                });
+            }
+        ).catch(next);
+});
 
 module.exports = wikiRouter;
