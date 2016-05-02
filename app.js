@@ -6,7 +6,7 @@ var swig = require('swig');
 var router = require('./routes');
 var path = require('path');
 var bodyParser = require('body-parser');
-
+var Model = require('./models/');
 // templating boilerplate setup
 app.set('views', path.join(__dirname, '/views')); // where to find the views
 app.set('view engine', 'html'); // what file extension do our templates have
@@ -26,10 +26,20 @@ app.use(bodyParser.json()); // would be for AJAX requests
 
 
 // start the server
-var server = app.listen(1337, function () {
-    console.log('listening on port 1337');
-});
 
+
+//sync
+
+Model.Page.sync({})
+    .then(function () {
+        return Model.User.sync();
+    })
+    .then(function () {
+        var server = app.listen(1337, function () {
+            console.log('listening on port 1337');
+        });
+    })
+    .catch(console.error);
 // modular routing that uses io inside it
 app.use('/', router);
 
