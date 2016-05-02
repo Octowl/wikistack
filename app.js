@@ -7,6 +7,7 @@ var path = require('path');
 var bodyParser = require('body-parser');
 
 var wikiRouter = require('./routes/wiki');
+var usersRouter = require('./routes/users');
 var models = require('./models/');
 
 // templating boilerplate setup
@@ -26,16 +27,22 @@ app.use(bodyParser.urlencoded({
 })); // for HTML form submits
 app.use(bodyParser.json()); // would be for AJAX requests
 
-//render root Page
+function getAllPages() {
+    return models.Page.findAll();
+}
 
+//render root Page
 app.get('/', function(req, res, next){
-    res.render('index', {});
+    getAllPages().then(function(pages){
+        res.render('index', {pages: pages})
+    });
+    //res.render('index', {});
 })
 
 // Sync DB
-models.Page.sync({})
+models.User.sync()
     .then(function () {
-        return models.User.sync();
+        return models.Page.sync();
     })
     .then(function () {
         // start the server
@@ -46,6 +53,6 @@ models.Page.sync({})
     .catch(console.error);
 // modular routing that uses io inside it
 app.use('/wiki/', wikiRouter);
-
+app.use('/users',usersRouter);
 // the typical way to use express static middleware.
 app.use(express.static(path.join(__dirname, '/public')));
