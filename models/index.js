@@ -32,6 +32,11 @@ var Page = db.define('page', {
     }
 });
 
+Page.hook('beforeValidate', function(user, options) {
+    if (user.title) user.urlTitle = user.title.replace(/\s+/g, '_').replace(/\W/g,'');
+    else user.urlTitle = Math.random().toString(36).substring(2,7);
+});
+
 var User = db.define('user', {
     name: {
         type: Sequelize.STRING,
@@ -45,7 +50,7 @@ var User = db.define('user', {
     }
 });
 
-model.exports = {
+module.exports = {
     Page: Page,
     User: User
 }
