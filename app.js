@@ -3,15 +3,9 @@ var express = require('express');
 var app = express();
 var morgan = require('morgan');
 var swig = require('swig');
-var makesRouter = require('./routes');
+var router = require('./routes');
 var path = require('path');
 var bodyParser = require('body-parser');
-var socketio = require('socket.io');
-var pg = require('pg');
-var conString = "postgres://localhost:5432/wikistackdb";
-var client = new pg.Client(conString);
-
-client.connect();
 
 // templating boilerplate setup
 app.set('views', path.join(__dirname, '/views')); // where to find the views
@@ -35,10 +29,9 @@ app.use(bodyParser.json()); // would be for AJAX requests
 var server = app.listen(1337, function () {
     console.log('listening on port 1337');
 });
-var io = socketio.listen(server);
 
 // modular routing that uses io inside it
-app.use('/', makesRouter(io, client));
+app.use('/', router);
 
 // the typical way to use express static middleware.
 app.use(express.static(path.join(__dirname, '/public')));
