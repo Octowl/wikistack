@@ -23,19 +23,33 @@ var Page = db.define('page', {
     status: {
         type: Sequelize.ENUM('open', 'closed'),
         defaultValue: 'open'
+    },
+    tags: {
+        type: Sequelize.ARRAY(Sequelize.STRING)
     }
 }, {
-    getterMethods : {
-        route: function(){
+    getterMethods: {
+        route: function () {
             return "/wiki/" + this.urlTitle;
         }
     }
 });
 
-Page.hook('beforeValidate', function(user, options) {
-    if (user.title) user.urlTitle = user.title.replace(/\s+/g, '_').replace(/\W/g,'');
-    else user.urlTitle = Math.random().toString(36).substring(2,7);
+Page.findByTag = function (tags) {
+    return Page.findAll({
+        where: {
+            tags: {
+                $overlap: tags
+            }
+        }
+    });
+}
+
+Page.hook('beforeValidate', function (user, options) {
+    if (user.title) user.urlTitle = user.title.replace(/\s+/g, '_').replace(/\W/g, '');
+    else user.urlTitle = Math.random().toString(36).substring(2, 7);
 });
+
 
 var User = db.define('user', {
     name: {
@@ -48,9 +62,17 @@ var User = db.define('user', {
         unique: true,
         allowNull: false
     }
+}, {
+    getterMethods: {
+        route: function () {
+            return "/users/" + this.id;
+        }
+    }
 });
 
-Page.belongsTo(User, {as: 'author'});
+Page.belongsTo(User, {
+    as: 'author'
+});
 
 module.exports = {
     Page: Page,
