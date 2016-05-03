@@ -14,11 +14,15 @@ wikiRouter.post('/', function (req, res, next) {
     var name = req.body.name;
     var email = req.body.email;
     var status = req.body.status;
+    var tags = req.body.tags.split(',').map(function (tag) {
+        return tag.trim()
+    });
 
     var page = Page.build({
         title: title,
         content: content,
-        status: status
+        status: status,
+        tags: tags
     });
 
     User.findOrCreate({
@@ -42,20 +46,39 @@ wikiRouter.get('/add', function (req, res) {
     res.render('addpage', {});
 })
 
+wikiRouter.get('/search', function (req, res) {
+    var tags = req.query.tags.split(',').map(function (tag) {
+        return tag.trim()
+    });
+    Page.findByTag(tags).then(
+        function (pages) {
+            res.render('index', {
+                pages: pages
+            });
+        }
+    )
+})
+
 wikiRouter.get('/:urlTitle', function (req, res, next) {
 
     Page.findOne({
             where: {
                 urlTitle: req.params.urlTitle
-            }
+            },
+            include: [{
+                model: User,
+                as: 'author'
+            }]
         })
-        .then(
-            function (result) {
+        .then(function (page) {
+            if (page === null) {
+                res.status(404).send();
+            } else {
                 res.render('wikipage', {
-                    page: result
-                });
+                    page: page
+                })
             }
-        ).catch(next);
+        }).catch(next);
 });
 
 module.exports = wikiRouter;
