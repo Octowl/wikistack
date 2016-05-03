@@ -39,6 +39,9 @@ app.get('/', function(req, res, next){
     //res.render('index', {});
 })
 
+app.get('/search', function(req, res, next){
+    res.render('search');
+})
 // Sync DB
 models.User.sync()
     .then(function () {
